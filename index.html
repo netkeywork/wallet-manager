@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>区块链钱包管理工具</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧面板 -->
+        <div class="left-panel">
+            <!-- 钱包管理区域 -->
+            <div class="wallet-management">
+                <div class="section-title">钱包管理</div>
+                
+                <!-- 操作按钮行 -->
+                <div class="button-row">
+                    <button class="btn btn-primary" onclick="wallet.openImportModal()">钱包导入</button>
+                    <button class="btn btn-danger" id="deleteBtn" onclick="wallet.deleteSelected()" disabled>钱包删除</button>
+                    <button class="btn btn-success" onclick="wallet.exportWallets()">钱包导出</button>
+                </div>
+
+                <!-- 网络配置行 -->
+                <div class="network-row">
+                    <select class="network-select" id="networkSelect">
+                        <option value="ethereum">Ethereum</option>
+                        <option value="bsc">BSC</option>
+                        <option value="arbitrum">Arbitrum</option>
+                        <option value="optimism">Optimism</option>
+                        <option value="linea">Linea</option>
+                        <option value="solana">Solana</option>
+                    </select>
+                    <button class="btn btn-primary" onclick="wallet.queryBalances()">余额查询</button>
+                    <span id="totalBalance">总计: --</span>
+                </div>
+
+                <!-- 钱包地址表格 -->
+                <div class="wallet-table-container">
+                    <table class="wallet-table">
+                        <thead>
+                            <tr>
+                                <th width="40">
+                                    <input type="checkbox" class="checkbox" id="selectAll" onchange="wallet.toggleSelectAll()">
+                                </th>
+                                <th width="50">序号</th>
+                                <th width="80">标签</th>
+                                <th width="140">地址</th>
+                                <th width="100">备注</th>
+                                <th width="80">余额</th>
+                            </tr>
+                        </thead>
+                        <tbody id="walletTableBody">
+                            <!-- 钱包数据动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 日志面板 -->
+            <div class="log-panel">
+                <div class="section-title">操作日志</div>
+                
+                <!-- 日志标签页 -->
+                <div class="log-tabs">
+                    <button class="log-tab active" onclick="logger.switchTab('all')" id="tabAll">
+                        全部 <span class="log-count" id="countAll">0</span>
+                    </button>
+                    <button class="log-tab" onclick="logger.switchTab('success')" id="tabSuccess">
+                        成功 <span class="log-count" id="countSuccess">0</span>
+                    </button>
+                    <button class="log-tab" onclick="logger.switchTab('error')" id="tabError">
+                        失败 <span class="log-count" id="countError">0</span>
+                    </button>
+                </div>
+                
+                <div class="log-content" id="logContent">
+                    <!-- 日志内容动态生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧面板 -->
+        <div class="right-panel">
+            <div class="section-title">功能区</div>
+            <div class="function-area">
+                <h3>🚀 第一阶段开发中...</h3>
+                <p>转账功能将在后续阶段实现</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 钱包导入弹窗 -->
+    <div class="modal-overlay" id="importModal">
+        <div class="modal">
+            <div class="modal-title">导入钱包</div>
+            <div class="form-group">
+                <label class="form-label">私钥</label>
+                <input type="password" class="form-input" id="privateKey" placeholder="输入钱包私钥">
+            </div>
+            <div class="form-group">
+                <label class="form-label">标签</label>
+                <input type="text" class="form-input" id="walletLabel" placeholder="钱包标签（可选）">
+            </div>
+            <div class="form-group">
+                <label class="form-label">备注</label>
+                <input type="text" class="form-input" id="walletNote" placeholder="备注信息（可选）">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="wallet.closeImportModal()">取消</button>
+                <button class="btn btn-primary" onclick="wallet.importWallet()">导入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载JavaScript模块 -->
+    <script src="js/logger.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
