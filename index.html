@@ -16,23 +16,49 @@
                 
                 <!-- 操作按钮行 -->
                 <div class="button-row">
-                    <button class="btn btn-primary" onclick="wallet.openImportModal()">钱包导入</button>
-                    <button class="btn btn-danger" id="deleteBtn" onclick="wallet.deleteSelected()" disabled>钱包删除</button>
-                    <button class="btn btn-success" onclick="wallet.exportWallets()">钱包导出</button>
+                    <button class="btn btn-primary" onclick="wallet.openImportModal()">
+                        📥 钱包导入
+                    </button>
+                    <button class="btn btn-danger" id="deleteBtn" onclick="wallet.deleteSelected()" disabled>
+                        🗑️ 钱包删除
+                    </button>
+                    <button class="btn btn-success" onclick="wallet.exportWallets()">
+                        📤 钱包导出
+                    </button>
+                    <button class="btn btn-secondary" onclick="wallet.clearAll()" title="清空所有钱包">
+                        🧹 清空
+                    </button>
                 </div>
 
-                <!-- 网络配置行 -->
-                <div class="network-row">
-                    <select class="network-select" id="networkSelect">
-                        <option value="ethereum">Ethereum</option>
-                        <option value="bsc">BSC</option>
-                        <option value="arbitrum">Arbitrum</option>
-                        <option value="optimism">Optimism</option>
-                        <option value="linea">Linea</option>
-                        <option value="solana">Solana</option>
-                    </select>
-                    <button class="btn btn-primary" onclick="wallet.queryBalances()">余额查询</button>
-                    <span id="totalBalance">总计: --</span>
+                <!-- 网络配置区域 -->
+                <div class="network-section">
+                    <div class="network-row">
+                        <select class="network-select" id="networkSelect" onchange="network.onNetworkChange()">
+                            <option value="ethereum">Ethereum Mainnet</option>
+                            <option value="bsc">BSC (BNB Chain)</option>
+                            <option value="arbitrum">Arbitrum One</option>
+                            <option value="optimism">Optimism</option>
+                            <option value="linea">Linea</option>
+                            <option value="solana">Solana</option>
+                            <option value="custom">🔧 自定义RPC</option>
+                        </select>
+                        <button class="btn btn-primary" onclick="wallet.queryBalances()">
+                            💰 余额查询
+                        </button>
+                        <button class="btn btn-secondary" onclick="network.openRpcModal()" title="管理RPC配置">
+                            ⚙️ RPC配置
+                        </button>
+                        <span id="totalBalance">总计: --</span>
+                    </div>
+                    
+                    <!-- RPC状态显示 -->
+                    <div class="rpc-status" id="rpcStatus">
+                        <span class="rpc-info">
+                            <span class="status-dot" id="rpcStatusDot"></span>
+                            <span id="currentRpcInfo">准备就绪</span>
+                        </span>
+                        <small id="rpcDetails">选择网络后显示RPC信息</small>
+                    </div>
                 </div>
 
                 <!-- 钱包地址表格 -->
@@ -44,14 +70,22 @@
                                     <input type="checkbox" class="checkbox" id="selectAll" onchange="wallet.toggleSelectAll()">
                                 </th>
                                 <th width="50">序号</th>
-                                <th width="80">标签</th>
-                                <th width="140">地址</th>
-                                <th width="100">备注</th>
-                                <th width="80">余额</th>
+                                <th width="100">标签</th>
+                                <th width="180">地址</th>
+                                <th width="120">备注</th>
+                                <th width="100">余额</th>
+                                <th width="80">操作</th>
                             </tr>
                         </thead>
                         <tbody id="walletTableBody">
-                            <!-- 钱包数据动态生成 -->
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: #6c757d; padding: 40px;">
+                                    <div>
+                                        <p style="font-size: 16px; margin-bottom: 8px;">🏦 暂无钱包</p>
+                                        <p style="font-size: 14px;">点击"钱包导入"开始添加钱包</p>
+                                    </div>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -59,7 +93,12 @@
 
             <!-- 日志面板 -->
             <div class="log-panel">
-                <div class="section-title">操作日志</div>
+                <div class="section-title">
+                    操作日志
+                    <button class="btn btn-sm btn-secondary" onclick="logger.clearLogs()" style="float: right; font-size: 12px; padding: 4px 8px;">
+                        🧹 清空日志
+                    </button>
+                </div>
                 
                 <!-- 日志标签页 -->
                 <div class="log-tabs">
@@ -72,10 +111,15 @@
                     <button class="log-tab" onclick="logger.switchTab('error')" id="tabError">
                         失败 <span class="log-count" id="countError">0</span>
                     </button>
+                    <button class="btn btn-sm btn-secondary" onclick="logger.exportLogs()" style="margin-left: auto; font-size: 12px; padding: 4px 8px;">
+                        📥 导出
+                    </button>
                 </div>
                 
                 <div class="log-content" id="logContent">
-                    <!-- 日志内容动态生成 -->
+                    <div style="text-align: center; color: #6c757d; padding: 20px;">
+                        <p>📝 日志记录将在此显示</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -84,8 +128,53 @@
         <div class="right-panel">
             <div class="section-title">功能区</div>
             <div class="function-area">
-                <h3>🚀 第一阶段开发中...</h3>
-                <p>转账功能将在后续阶段实现</p>
+                <div class="function-tabs" id="functionTabs">
+                    <button class="function-tab active" onclick="showFunction('transfer')">
+                        💸 转账功能
+                    </button>
+                    <button class="function-tab" onclick="showFunction('batch')">
+                        📊 批量操作
+                    </button>
+                    <button class="function-tab" onclick="showFunction('tools')">
+                        🔧 工具箱
+                    </button>
+                </div>
+                
+                <!-- 转账功能区 -->
+                <div class="function-content" id="transferFunction">
+                    <h3>🚀 转账功能开发中...</h3>
+                    <p>即将支持：</p>
+                    <ul style="text-align: left; margin: 20px 0;">
+                        <li>📤 分发模式：1对多转账</li>
+                        <li>🔄 多对多模式：批量转账</li>
+                        <li>💰 余额检查</li>
+                        <li>⛽ Gas费估算</li>
+                    </ul>
+                </div>
+                
+                <!-- 批量操作区 -->
+                <div class="function-content" id="batchFunction" style="display: none;">
+                    <h3>📊 批量操作</h3>
+                    <p>功能预览：</p>
+                    <ul style="text-align: left; margin: 20px 0;">
+                        <li>📋 批量余额查询</li>
+                        <li>📥 批量钱包导入</li>
+                        <li>📤 批量钱包导出</li>
+                        <li>🏷️ 批量标签管理</li>
+                    </ul>
+                </div>
+                
+                <!-- 工具箱区 -->
+                <div class="function-content" id="toolsFunction" style="display: none;">
+                    <h3>🔧 实用工具</h3>
+                    <p>计划功能：</p>
+                    <ul style="text-align: left; margin: 20px 0;">
+                        <li>🔑 私钥格式转换</li>
+                        <li>📊 数据统计分析</li>
+                        <li>🔒 钱包安全检查</li>
+                        <li>💾 数据备份恢复</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -93,29 +182,177 @@
     <!-- 钱包导入弹窗 -->
     <div class="modal-overlay" id="importModal">
         <div class="modal">
-            <div class="modal-title">导入钱包</div>
-            <div class="form-group">
-                <label class="form-label">私钥</label>
-                <input type="password" class="form-input" id="privateKey" placeholder="输入钱包私钥">
+            <div class="modal-title">📥 导入钱包</div>
+            
+            <!-- 导入方式标签页 -->
+            <div class="import-tabs">
+                <button class="import-tab active" onclick="wallet.switchImportTab('manual')">
+                    ✍️ 手动输入
+                </button>
+                <button class="import-tab" onclick="wallet.switchImportTab('file')">
+                    📁 文件导入
+                </button>
             </div>
-            <div class="form-group">
-                <label class="form-label">标签</label>
-                <input type="text" class="form-input" id="walletLabel" placeholder="钱包标签（可选）">
+            
+            <!-- 手动输入区域 -->
+            <div class="import-content" id="manualImport">
+                <div class="form-group">
+                    <label class="form-label">私钥 *</label>
+                    <input type="password" class="form-input" id="privateKey" 
+                           placeholder="输入钱包私钥（64位十六进制字符）">
+                    <small class="form-hint">支持带0x前缀或不带前缀的私钥格式</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">标签</label>
+                    <input type="text" class="form-input" id="walletLabel" 
+                           placeholder="钱包标签（可选，用于识别）">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">备注</label>
+                    <input type="text" class="form-input" id="walletNote" 
+                           placeholder="备注信息（可选）">
+                </div>
             </div>
-            <div class="form-group">
-                <label class="form-label">备注</label>
-                <input type="text" class="form-input" id="walletNote" placeholder="备注信息（可选）">
+            
+            <!-- 文件导入区域 -->
+            <div class="import-content" id="fileImport" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">选择文件</label>
+                    <input type="file" class="form-input" id="importFile" 
+                           accept=".json,.txt,.csv" onchange="wallet.handleFileSelect(event)">
+                    <small class="form-hint">支持 JSON、TXT、CSV 格式文件</small>
+                </div>
+                <div class="file-preview" id="filePreview"></div>
             </div>
+            
             <div class="modal-buttons">
                 <button class="btn btn-cancel" onclick="wallet.closeImportModal()">取消</button>
-                <button class="btn btn-primary" onclick="wallet.importWallet()">导入</button>
+                <button class="btn btn-primary" onclick="wallet.importWallet()" id="importBtn">
+                    📥 导入钱包
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RPC配置弹窗 -->
+    <div class="modal-overlay" id="rpcModal">
+        <div class="modal">
+            <div class="modal-title">⚙️ RPC 网络配置</div>
+            
+            <div class="form-group">
+                <label class="form-label">RPC URL *</label>
+                <input type="url" class="form-input" id="customRpcUrl" 
+                       placeholder="https://mainnet.infura.io/v3/YOUR-PROJECT-ID"
+                       oninput="network.onRpcUrlChange()">
+                <small class="form-hint">输入RPC地址后将自动识别网络类型</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">网络名称</label>
+                <input type="text" class="form-input" id="customNetworkName" 
+                       placeholder="将自动识别..." readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Chain ID</label>
+                <input type="number" class="form-input" id="customChainId" 
+                       placeholder="将自动识别..." readonly>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">货币符号</label>
+                <input type="text" class="form-input" id="customSymbol" 
+                       placeholder="ETH" readonly>
+            </div>
+            
+            <div class="rpc-test-result" id="rpcTestResult"></div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="network.closeRpcModal()">取消</button>
+                <button class="btn btn-secondary" onclick="network.testRpc()" id="testRpcBtn">
+                    🧪 测试连接
+                </button>
+                <button class="btn btn-primary" onclick="network.saveCustomRpc()" id="saveRpcBtn" disabled>
+                    💾 保存配置
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 钱包导出弹窗 -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal">
+            <div class="modal-title">📤 导出钱包</div>
+            
+            <div class="form-group">
+                <label class="form-label">导出范围</label>
+                <select class="form-input" id="exportRange">
+                    <option value="all">全部钱包</option>
+                    <option value="selected">选中钱包</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">导出格式</label>
+                <select class="form-input" id="exportFormat">
+                    <option value="json">JSON 格式</option>
+                    <option value="csv">CSV 格式</option>
+                    <option value="txt">TXT 格式</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <input type="checkbox" id="encryptExport"> 
+                    加密导出（推荐）
+                </label>
+                <div id="encryptOptions" style="margin-top: 10px; display: none;">
+                    <input type="password" class="form-input" id="exportPassword" 
+                           placeholder="设置导出密码">
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn btn-cancel" onclick="wallet.closeExportModal()">取消</button>
+                <button class="btn btn-primary" onclick="wallet.doExport()">
+                    📤 开始导出
+                </button>
             </div>
         </div>
     </div>
 
     <!-- 加载JavaScript模块 -->
     <script src="js/logger.js"></script>
+    <script src="js/network.js"></script>
     <script src="js/wallet.js"></script>
     <script src="js/main.js"></script>
+
+    <script>
+        // 页面基础功能
+        function showFunction(type) {
+            // 切换功能标签页
+            document.querySelectorAll('.function-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.function-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(type + 'Function').style.display = 'block';
+        }
+        
+        // 加密导出选项切换
+        document.addEventListener('DOMContentLoaded', function() {
+            const encryptCheckbox = document.getElementById('encryptExport');
+            const encryptOptions = document.getElementById('encryptOptions');
+            
+            if (encryptCheckbox) {
+                encryptCheckbox.addEventListener('change', function() {
+                    encryptOptions.style.display = this.checked ? 'block' : 'none';
+                });
+            }
+        });
+    </script>
 </body>
 </html>
