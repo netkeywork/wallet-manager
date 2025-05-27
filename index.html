@@ -4,408 +4,666 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>区块链钱包管理工具</title>
-    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- 基础样式 -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/wallet.css">
+    <link rel="stylesheet" href="css/network.css">
+    <link rel="stylesheet" href="css/logger.css">
+    
+    <!-- 转账功能样式 -->
+    <link rel="stylesheet" href="css/transfer.css">
+    
+    <!-- 图标库 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* 基础布局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* 导航样式 */
+        .nav-menu {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            flex: none;
+        }
+        
+        .nav-link {
+            padding: 12px 20px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .nav-link:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+        }
+        
+        .nav-link.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        /* 标签页内容 */
+        .tab-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            min-height: 600px;
+        }
+        
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .content-header h2 {
+            margin: 0;
+            color: #2c3e50;
+            font-size: 24px;
+        }
+        
+        .content-header p {
+            margin: 4px 0 0 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <!-- 左侧面板 -->
-        <div class="left-panel">
-            <!-- 钱包管理区域 -->
-            <div class="wallet-management">
-                <div class="section-title">钱包管理</div>
-                
-                <!-- 操作按钮行 -->
-                <div class="button-row">
-                    <button class="btn btn-primary" onclick="wallet.openImportModal()">
-                        📥 钱包导入
-                    </button>
-                    <button class="btn btn-danger" id="deleteBtn" onclick="wallet.deleteSelected()" disabled>
-                        🗑️ 钱包删除
-                    </button>
-                    <button class="btn btn-success" onclick="wallet.exportWallets()">
-                        📤 钱包导出
-                    </button>
-                    <button class="btn btn-secondary" onclick="wallet.clearAll()" title="清空所有钱包">
-                        🧹 清空
-                    </button>
-                </div>
+        <!-- 页面标题 -->
+        <header class="page-header">
+            <h1>🚀 区块链钱包管理工具</h1>
+            <p>支持多网络钱包管理、批量转账、历史记录等功能</p>
+        </header>
 
-                <!-- 网络配置区域 -->
-                <div class="network-section">
-                    <div class="network-row">
-                        <select class="network-select" id="networkSelect" onchange="network.onNetworkChange()">
-                            <option value="ethereum">Ethereum Mainnet</option>
-                            <option value="bsc">BSC (BNB Chain)</option>
-                            <option value="arbitrum">Arbitrum One</option>
-                            <option value="optimism">Optimism</option>
-                            <option value="linea">Linea</option>
-                            <option value="polygon">Polygon</option>
-                            <option value="base">Base</option>
-                            <option value="avalanche">Avalanche</option>
-                            <option value="zksync">zkSync Era</option>
-                            <option value="scroll">Scroll</option>
-                            <option value="solana">Solana</option>
-                            <option value="custom">🔧 自定义RPC</option>
-                        </select>
-                        <button class="btn btn-primary" onclick="wallet.queryBalances()">
-                            💰 余额查询
-                        </button>
-                        <button class="btn btn-secondary" onclick="network.openRpcModal()" title="管理RPC配置">
-                            ⚙️ RPC配置
-                        </button>
-                        <span id="totalBalance">总计: --</span>
-                    </div>
-                    
-                    <!-- RPC状态显示 -->
-                    <div class="rpc-status" id="rpcStatus">
-                        <span class="rpc-info">
-                            <span class="status-dot" id="rpcStatusDot"></span>
-                            <span id="currentRpcInfo">准备就绪</span>
-                        </span>
-                        <small id="rpcDetails">选择网络后显示RPC信息</small>
-                    </div>
-                </div>
+        <!-- 导航菜单 -->
+        <nav class="nav-menu" id="mainNavigation">
+            <div class="nav-item">
+                <button class="nav-link active" data-tab="wallet-tab">
+                    👛 钱包管理
+                </button>
+            </div>
+            <div class="nav-item">
+                <button class="nav-link" data-tab="network-tab">
+                    🌐 网络配置
+                </button>
+            </div>
+            <div class="nav-item">
+                <button class="nav-link" data-tab="transfer-tab">
+                    💸 转账功能
+                </button>
+            </div>
+            <div class="nav-item">
+                <button class="nav-link" data-tab="logger-tab">
+                    📋 日志记录
+                </button>
+            </div>
+        </nav>
 
-                <!-- 钱包地址表格 -->
-                <div class="wallet-table-container">
-                    <table class="wallet-table">
-                        <thead>
-                            <tr>
-                                <th width="40">
-                                    <input type="checkbox" class="checkbox" id="selectAll" onchange="wallet.toggleSelectAll()">
-                                </th>
-                                <th width="50">序号</th>
-                                <th width="100">标签</th>
-                                <th width="180">地址</th>
-                                <th width="120">备注</th>
-                                <th width="100">余额</th>
-                                <th width="80">操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id="walletTableBody">
-                            <tr>
-                                <td colspan="7" style="text-align: center; color: #6c757d; padding: 40px;">
-                                    <div>
-                                        <p style="font-size: 16px; margin-bottom: 8px;">🏦 暂无钱包</p>
-                                        <p style="font-size: 14px;">点击"钱包导入"开始添加钱包</p>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+        <!-- 钱包管理标签页 -->
+        <div class="tab-content" id="wallet-tab">
+            <div class="content-header">
+                <div>
+                    <h2>👛 钱包管理</h2>
+                    <p>导入、管理和查看钱包信息</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline btn-sm" onclick="walletManager.exportWallets()">
+                        📤 导出钱包
+                    </button>
+                    <button class="btn btn-primary btn-sm" onclick="walletManager.showImportModal()">
+                        📥 导入钱包
+                    </button>
                 </div>
             </div>
-
-            <!-- 日志面板 -->
-            <div class="log-panel">
-                <div class="section-title">
-                    操作日志
-                    <button class="btn btn-sm btn-secondary" onclick="logger.clearLogs()" style="float: right; font-size: 12px; padding: 4px 8px;">
-                        🧹 清空日志
-                    </button>
-                </div>
-                
-                <!-- 日志标签页 -->
-                <div class="log-tabs">
-                    <button class="log-tab active" onclick="logger.switchTab('all')" id="tabAll">
-                        全部 <span class="log-count" id="countAll">0</span>
-                    </button>
-                    <button class="log-tab" onclick="logger.switchTab('success')" id="tabSuccess">
-                        成功 <span class="log-count" id="countSuccess">0</span>
-                    </button>
-                    <button class="log-tab" onclick="logger.switchTab('error')" id="tabError">
-                        失败 <span class="log-count" id="countError">0</span>
-                    </button>
-                    <button class="btn btn-sm btn-secondary" onclick="logger.exportLogs()" style="margin-left: auto; font-size: 12px; padding: 4px 8px;">
-                        📥 导出
-                    </button>
-                </div>
-                
-                <div class="log-content" id="logContent">
-                    <div style="text-align: center; color: #6c757d; padding: 20px;">
-                        <p>📝 日志记录将在此显示</p>
+            
+            <!-- 钱包管理容器 -->
+            <div id="walletContainer">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👛</div>
+                    <div class="empty-state-title">暂无钱包</div>
+                    <div class="empty-state-description">
+                        点击"导入钱包"开始添加您的钱包
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 右侧面板 -->
-        <div class="right-panel">
-            <div class="section-title">功能区</div>
-            <div class="function-area">
-                <div class="function-tabs" id="functionTabs">
-                    <button class="function-tab active" onclick="showFunction('transfer')">
-                        💸 转账功能
+        <!-- 网络配置标签页 -->
+        <div class="tab-content" id="network-tab" style="display: none;">
+            <div class="content-header">
+                <div>
+                    <h2>🌐 网络配置</h2>
+                    <p>管理区块链网络连接和RPC设置</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline btn-sm" onclick="networkManager.testAllNetworks()">
+                        🔍 测试所有网络
                     </button>
-                    <button class="function-tab" onclick="showFunction('batch')">
-                        📊 批量操作
-                    </button>
-                    <button class="function-tab" onclick="showFunction('tools')">
-                        🔧 工具箱
+                    <button class="btn btn-primary btn-sm" onclick="networkManager.showAddNetworkModal()">
+                        ➕ 添加网络
                     </button>
                 </div>
-                
-                <!-- 转账功能区 -->
-                <div class="function-content" id="transferFunction">
-                    <h3>🚀 转账功能开发中...</h3>
-                    <p>即将支持：</p>
-                    <ul style="text-align: left; margin: 20px 0;">
-                        <li>📤 分发模式：1对多转账</li>
-                        <li>🔄 多对多模式：批量转账</li>
-                        <li>💰 余额检查</li>
-                        <li>⛽ Gas费估算</li>
-                    </ul>
+            </div>
+            
+            <!-- 网络配置容器 -->
+            <div id="networkContainer">
+                <div class="loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    正在加载网络配置...
+                </div>
+            </div>
+        </div>
+<!-- 转账功能标签页 -->
+        <div class="tab-content" id="transfer-tab" style="display: none;">
+            <div class="content-header">
+                <div>
+                    <h2>💸 转账功能</h2>
+                    <p>支持分发模式(1对多)和批量模式(多对多)转账</p>
+                </div>
+                <div class="header-actions">
+                    <button id="showTransferHistory" class="btn btn-outline btn-sm">
+                        📊 转账历史
+                    </button>
+                    <button id="transferHelp" class="btn btn-outline btn-sm">
+                        ❓ 使用帮助
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 转账功能容器 -->
+            <div id="transferContainer">
+                <!-- 转账界面将由JavaScript动态生成 -->
+                <div class="empty-state">
+                    <div class="empty-state-icon">💸</div>
+                    <div class="empty-state-title">转账功能准备中</div>
+                    <div class="empty-state-description">
+                        请先选择网络并导入钱包，然后刷新页面
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日志记录标签页 -->
+        <div class="tab-content" id="logger-tab" style="display: none;">
+            <div class="content-header">
+                <div>
+                    <h2>📋 日志记录</h2>
+                    <p>查看系统操作记录和错误日志</p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn btn-outline btn-sm" onclick="logger.exportLogs()">
+                        📤 导出日志
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="logger.clearLogs()">
+                        🗑️ 清空日志
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 日志容器 -->
+            <div id="loggerContainer">
+                <div class="logger-controls">
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">全部</button>
+                        <button class="filter-btn" data-filter="success">成功</button>
+                        <button class="filter-btn" data-filter="error">错误</button>
+                        <button class="filter-btn" data-filter="warning">警告</button>
+                        <button class="filter-btn" data-filter="info">信息</button>
+                    </div>
+                    <div class="logger-stats">
+                        <span>总计: <strong id="totalLogs">0</strong></span>
+                        <span>成功: <strong id="successLogs">0</strong></span>
+                        <span>错误: <strong id="errorLogs">0</strong></span>
+                    </div>
                 </div>
                 
-                <!-- 批量操作区 -->
-                <div class="function-content" id="batchFunction" style="display: none;">
-                    <h3>📊 批量操作</h3>
-                    <p>功能预览：</p>
-                    <ul style="text-align: left; margin: 20px 0;">
-                        <li>📋 批量余额查询</li>
-                        <li>📥 批量钱包导入</li>
-                        <li>📤 批量钱包导出</li>
-                        <li>🏷️ 批量标签管理</li>
-                    </ul>
-                </div>
-                
-                <!-- 工具箱区 -->
-                <div class="function-content" id="toolsFunction" style="display: none;">
-                    <h3>🔧 实用工具</h3>
-                    <p>计划功能：</p>
-                    <ul style="text-align: left; margin: 20px 0;">
-                        <li>🔑 私钥格式转换</li>
-                        <li>📊 数据统计分析</li>
-                        <li>🔒 钱包安全检查</li>
-                        <li>💾 数据备份恢复</li>
-                    </ul>
+                <div id="logsList" class="logs-list">
+                    <!-- 日志条目将动态添加 -->
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- 钱包导入弹窗 -->
-    <div class="modal-overlay" id="importModal">
-        <div class="modal">
-            <div class="modal-title">📥 导入钱包</div>
-            
-            <!-- 导入方式标签页 -->
-            <div class="import-tabs">
-                <button class="import-tab active" onclick="wallet.switchImportTab('manual')">
-                    ✍️ 手动输入
-                </button>
-                <button class="import-tab" onclick="wallet.switchImportTab('file')">
-                    📁 文件导入
-                </button>
-            </div>
-            
-            <!-- 手动输入区域 -->
-            <div class="import-content" id="manualImport">
-                <div class="form-group">
-                    <label class="form-label">私钥 *</label>
-                    <input type="password" class="form-input" id="privateKey" 
-                           placeholder="输入钱包私钥（64位十六进制字符）">
-                    <small class="form-hint">支持带0x前缀或不带前缀的私钥格式</small>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">标签</label>
-                    <input type="text" class="form-input" id="walletLabel" 
-                           placeholder="钱包标签（可选，用于识别）">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">备注</label>
-                    <input type="text" class="form-input" id="walletNote" 
-                           placeholder="备注信息（可选）">
-                </div>
-            </div>
-            
-            <!-- 文件导入区域 -->
-            <div class="import-content" id="fileImport" style="display: none;">
-                <div class="form-group">
-                    <label class="form-label">选择文件</label>
-                    <input type="file" class="form-input" id="importFile" 
-                           accept=".json,.txt,.csv" onchange="wallet.handleFileSelect(event)">
-                    <small class="form-hint">支持 JSON、TXT、CSV 格式文件</small>
-                </div>
-                <div class="file-preview" id="filePreview"></div>
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="btn btn-cancel" onclick="wallet.closeImportModal()">取消</button>
-                <button class="btn btn-primary" onclick="wallet.importWallet()" id="importBtn">
-                    📥 导入钱包
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 增强版 RPC配置弹窗 -->
-    <div class="modal-overlay" id="rpcModal">
-        <div class="modal large-modal">
-            <div class="modal-title">⚙️ RPC 网络配置</div>
-            
-            <!-- RPC管理标签页 -->
-            <div class="rpc-tabs">
-                <button class="rpc-tab active" onclick="network.switchRpcTab('add')" id="addRpcTab">
-                    ➕ 添加RPC
-                </button>
-                <button class="rpc-tab" onclick="network.switchRpcTab('manage')" id="manageRpcTab">
-                    📋 管理RPC
-                </button>
-                <button class="rpc-tab" onclick="network.switchRpcTab('test')" id="testRpcTab">
-                    🧪 网络测试
-                </button>
-            </div>
-            
-            <!-- 添加RPC标签页 -->
-            <div class="rpc-tab-content" id="addRpcContent">
-                <div class="form-group">
-                    <label class="form-label">RPC URL *</label>
-                    <input type="url" class="form-input" id="customRpcUrl" 
-                           placeholder="https://mainnet.infura.io/v3/YOUR-PROJECT-ID"
-                           oninput="network.onRpcUrlChange()">
-                    <small class="form-hint">输入RPC地址后将自动识别网络类型</small>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">网络名称</label>
-                    <input type="text" class="form-input" id="customNetworkName" 
-                           placeholder="将自动识别..." readonly>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Chain ID</label>
-                    <input type="number" class="form-input" id="customChainId" 
-                           placeholder="将自动识别..." readonly>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label">货币符号</label>
-                    <input type="text" class="form-input" id="customSymbol" 
-                           placeholder="ETH" readonly>
-                </div>
-                
-                <div class="rpc-test-result" id="rpcTestResult"></div>
-            </div>
-            
-            <!-- 管理RPC标签页 -->
-            <div class="rpc-tab-content" id="manageRpcContent" style="display: none;">
-                <div class="rpc-list-header">
-                    <h4>自定义RPC列表</h4>
-                    <button class="btn btn-sm btn-secondary" onclick="network.refreshRpcList()">
-                        🔄 刷新
-                    </button>
-                </div>
-                <div class="rpc-list" id="customRpcList">
-                    <div class="empty-rpc-list">
-                        <p>📡 暂无自定义RPC</p>
-                        <p>点击"添加RPC"标签页开始添加</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 网络测试标签页 -->
-            <div class="rpc-tab-content" id="testRpcContent" style="display: none;">
-                <div class="network-test-header">
-                    <h4>网络延迟测试</h4>
-                    <button class="btn btn-sm btn-primary" onclick="network.testAllNetworks()">
-                        🧪 测试所有网络
-                    </button>
-                </div>
-                <div class="network-test-results" id="networkTestResults">
-                    <div class="test-placeholder">
-                        <p>🚀 点击"测试所有网络"开始检测</p>
-                        <p style="font-size: 14px; color: #6c757d;">将测试所有预设网络的连接速度和延迟</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="btn btn-cancel" onclick="network.closeRpcModal()">关闭</button>
-                <button class="btn btn-secondary" onclick="network.testRpc()" id="testRpcBtn">
-                    🧪 测试连接
-                </button>
-                <button class="btn btn-primary" onclick="network.saveCustomRpc()" id="saveRpcBtn" disabled>
-                    💾 保存配置
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 钱包导出弹窗 -->
-    <div class="modal-overlay" id="exportModal">
-        <div class="modal">
-            <div class="modal-title">📤 导出钱包</div>
-            
-            <div class="form-group">
-                <label class="form-label">导出范围</label>
-                <select class="form-input" id="exportRange">
-                    <option value="all">全部钱包</option>
-                    <option value="selected">选中钱包</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">导出格式</label>
-                <select class="form-input" id="exportFormat">
-                    <option value="json">JSON 格式</option>
-                    <option value="csv">CSV 格式</option>
-                    <option value="txt">TXT 格式</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">
-                    <input type="checkbox" id="encryptExport"> 
-                    加密导出（推荐）
-                </label>
-                <div id="encryptOptions" style="margin-top: 10px; display: none;">
-                    <input type="password" class="form-input" id="exportPassword" 
-                           placeholder="设置导出密码">
-                </div>
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="btn btn-cancel" onclick="wallet.closeExportModal()">取消</button>
-                <button class="btn btn-primary" onclick="wallet.doExport()">
-                    📤 开始导出
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 加载JavaScript模块 -->
+<!-- JavaScript 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.10.0/web3.min.js"></script>
+    
+    <!-- 核心模块 -->
     <script src="js/logger.js"></script>
     <script src="js/network.js"></script>
     <script src="js/wallet.js"></script>
+    <script src="js/transfer.js"></script>
     <script src="js/main.js"></script>
-
+    
+    <!-- 页面功能脚本 -->
     <script>
-        // 页面基础功能
-        function showFunction(type) {
-            // 切换功能标签页
-            document.querySelectorAll('.function-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.function-content').forEach(content => {
-                content.style.display = 'none';
-            });
+        // 全局变量
+        let currentActiveTab = 'wallet-tab';
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 钱包管理工具启动中...');
             
-            event.target.classList.add('active');
-            document.getElementById(type + 'Function').style.display = 'block';
+            // 初始化标签页切换
+            initTabSwitching();
+            
+            // 初始化转账功能按钮
+            initTransferButtons();
+            
+            // 检查模块加载状态
+            checkModulesStatus();
+            
+            console.log('✅ 页面初始化完成');
+        });
+        
+        // 初始化标签页切换功能
+        function initTabSwitching() {
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    if (tabId) {
+                        showTab(tabId);
+                    }
+                });
+            });
         }
         
-        // 加密导出选项切换
-        document.addEventListener('DOMContentLoaded', function() {
-            const encryptCheckbox = document.getElementById('encryptExport');
-            const encryptOptions = document.getElementById('encryptOptions');
+        // 显示指定标签页
+        function showTab(tabId) {
+            // 隐藏所有标签页
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
             
-            if (encryptCheckbox) {
-                encryptCheckbox.addEventListener('change', function() {
-                    encryptOptions.style.display = this.checked ? 'block' : 'none';
+            // 移除所有导航项的活动状态
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 显示目标标签页
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.style.display = 'block';
+                currentActiveTab = tabId;
+            }
+            
+            // 激活对应的导航项
+            const activeLink = document.querySelector(`[data-tab="${tabId}"]`);
+            if (activeLink) {
+                activeLink.classList.add('active');
+            }
+            
+            // 特殊处理转账页面
+            if (tabId === 'transfer-tab') {
+                initTransferPage();
+            }
+            
+            console.log(`切换到标签页: ${tabId}`);
+        }
+        
+        // 初始化转账页面
+        function initTransferPage() {
+            // 检查转账管理器是否已初始化
+            if (typeof transferManager === 'undefined' || !transferManager) {
+                setTimeout(() => {
+                    if (typeof TransferManager !== 'undefined') {
+                        transferManager = new TransferManager();
+                        console.log('✅ 转账管理器初始化完成');
+                    } else {
+                        console.warn('⚠️ 转账模块未加载');
+                        showTransferError();
+                    }
+                }, 100);
+            }
+        }
+        
+        // 显示转账功能错误
+        function showTransferError() {
+            const container = document.getElementById('transferContainer');
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <div class="empty-state-title">转账功能加载失败</div>
+                        <div class="empty-state-description">
+                            请检查 transfer.js 文件是否正确加载<br>
+                            <button class="btn btn-primary" onclick="location.reload()">刷新页面</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+// 初始化转账功能按钮
+        function initTransferButtons() {
+            // 转账历史按钮
+            const historyBtn = document.getElementById('showTransferHistory');
+            if (historyBtn) {
+                historyBtn.addEventListener('click', function() {
+                    if (typeof transferManager !== 'undefined' && transferManager) {
+                        if (typeof transferManager.showTransferHistory === 'function') {
+                            transferManager.showTransferHistory();
+                        } else {
+                            showNotification('转账历史功能开发中...', 'info');
+                        }
+                    } else {
+                        showNotification('请先初始化转账管理器', 'warning');
+                    }
                 });
             }
+            
+            // 帮助按钮
+            const helpBtn = document.getElementById('transferHelp');
+            if (helpBtn) {
+                helpBtn.addEventListener('click', showTransferHelp);
+            }
+        }
+        
+        // 显示转账帮助信息
+        function showTransferHelp() {
+            const helpModal = document.createElement('div');
+            helpModal.className = 'transfer-help-modal';
+            helpModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>💸 转账功能使用帮助</h3>
+                        <button class="close-btn">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="help-section">
+                            <h4>🎯 功能简介</h4>
+                            <p>转账功能支持两种模式：</p>
+                            <ul>
+                                <li><strong>分发模式 (1对多):</strong> 一个发送方钱包向多个接收方转账</li>
+                                <li><strong>批量模式 (多对多):</strong> 多个发送方钱包分别向对应接收方转账</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h4>📋 使用步骤</h4>
+                            <ol>
+                                <li>选择转账模式（分发/批量）</li>
+                                <li>确认当前网络正确</li>
+                                <li>添加转账信息（发送方、接收方、金额）</li>
+                                <li>检查余额确保充足</li>
+                                <li>估算Gas费用</li>
+                                <li>确认无误后执行转账</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h4>💡 使用技巧</h4>
+                            <ul>
+                                <li>支持CSV文件批量导入转账数据</li>
+                                <li>可以实时查看转账进度和结果</li>
+                                <li>失败的转账可以一键重试</li>
+                                <li>所有转账记录都会保存到历史中</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h4>⚠️ 注意事项</h4>
+                            <ul>
+                                <li>转账前请仔细检查接收地址和金额</li>
+                                <li>确保钱包有足够余额支付Gas费</li>
+                                <li>网络拥堵时Gas费可能较高</li>
+                                <li>转账一旦发送无法撤销</li>
+                                <li>建议先小额测试再大额转账</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="this.closest('.transfer-help-modal').remove()">
+                            知道了
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // 添加关闭事件
+            helpModal.querySelector('.close-btn').addEventListener('click', () => {
+                helpModal.remove();
+            });
+            
+            helpModal.addEventListener('click', (e) => {
+                if (e.target === helpModal) {
+                    helpModal.remove();
+                }
+            });
+            
+            document.body.appendChild(helpModal);
+            helpModal.style.display = 'flex';
+        }
+        
+        // 检查模块加载状态
+        function checkModulesStatus() {
+            const modules = [
+                { name: 'Logger', check: () => typeof logger !== 'undefined' },
+                { name: 'Network', check: () => typeof networkManager !== 'undefined' },
+                { name: 'Wallet', check: () => typeof walletManager !== 'undefined' },
+                { name: 'Transfer', check: () => typeof TransferManager !== 'undefined' },
+                { name: 'Web3', check: () => typeof Web3 !== 'undefined' }
+            ];
+            
+            modules.forEach(module => {
+                if (module.check()) {
+                    console.log(`✅ ${module.name} 模块加载成功`);
+                } else {
+                    console.warn(`⚠️ ${module.name} 模块加载失败`);
+                }
+            });
+        }
+// 通知函数
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <span class="notification-icon">
+                        ${type === 'success' ? '✅' : 
+                          type === 'error' ? '❌' : 
+                          type === 'warning' ? '⚠️' : 'ℹ️'}
+                    </span>
+                    <span class="notification-message">${message}</span>
+                    <button class="notification-close">&times;</button>
+                </div>
+            `;
+            
+            // 添加关闭事件
+            notification.querySelector('.notification-close').addEventListener('click', () => {
+                notification.remove();
+            });
+            
+            document.body.appendChild(notification);
+            
+            // 自动关闭
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + 数字键切换标签页
+            if ((e.ctrlKey || e.metaKey) && e.key >= '1' && e.key <= '4') {
+                e.preventDefault();
+                const tabs = ['wallet-tab', 'network-tab', 'transfer-tab', 'logger-tab'];
+                const index = parseInt(e.key) - 1;
+                if (tabs[index]) {
+                    showTab(tabs[index]);
+                }
+            }
+        });
+        
+        // 错误处理
+        window.addEventListener('error', function(e) {
+            console.error('页面错误:', e.error);
+            showNotification(`页面错误: ${e.message}`, 'error');
+        });
+        
+        // 未处理的Promise错误
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('未处理的Promise错误:', e.reason);
+            showNotification(`异步操作失败: ${e.reason}`, 'error');
         });
     </script>
+    
+    <!-- 额外样式 -->
+    <style>
+        /* 页面标题样式 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px 0;
+        }
+        
+        .page-header h1 {
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 28px;
+        }
+        
+        .page-header p {
+            color: #6c757d;
+            font-size: 16px;
+        }
+        
+        /* 空状态样式 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-state-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        .empty-state-description {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        
+        .loading i {
+            margin-right: 8px;
+        }
+        
+        /* 日志样式 */
+        .logger-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .filter-btn {
+            padding: 6px 12px;
+            border: 1px solid #dee2e6;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-btn:hover {
+            background: #e9ecef;
+        }
+        
+        .filter-btn.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+        .logger-stats {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+        }
+        
+        .logger-stats strong {
+            color: #007bff;
+        }
+        
+        .logs-list {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            min-height: 300px;
+            background: #fff;
+        }
+    </style>
 </body>
 </html>
