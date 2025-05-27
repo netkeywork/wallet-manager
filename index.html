@@ -39,6 +39,11 @@
                             <option value="arbitrum">Arbitrum One</option>
                             <option value="optimism">Optimism</option>
                             <option value="linea">Linea</option>
+                            <option value="polygon">Polygon</option>
+                            <option value="base">Base</option>
+                            <option value="avalanche">Avalanche</option>
+                            <option value="zksync">zkSync Era</option>
+                            <option value="scroll">Scroll</option>
                             <option value="solana">Solana</option>
                             <option value="custom">🔧 自定义RPC</option>
                         </select>
@@ -234,41 +239,89 @@
         </div>
     </div>
 
-    <!-- RPC配置弹窗 -->
+    <!-- 增强版 RPC配置弹窗 -->
     <div class="modal-overlay" id="rpcModal">
-        <div class="modal">
+        <div class="modal large-modal">
             <div class="modal-title">⚙️ RPC 网络配置</div>
             
-            <div class="form-group">
-                <label class="form-label">RPC URL *</label>
-                <input type="url" class="form-input" id="customRpcUrl" 
-                       placeholder="https://mainnet.infura.io/v3/YOUR-PROJECT-ID"
-                       oninput="network.onRpcUrlChange()">
-                <small class="form-hint">输入RPC地址后将自动识别网络类型</small>
+            <!-- RPC管理标签页 -->
+            <div class="rpc-tabs">
+                <button class="rpc-tab active" onclick="network.switchRpcTab('add')" id="addRpcTab">
+                    ➕ 添加RPC
+                </button>
+                <button class="rpc-tab" onclick="network.switchRpcTab('manage')" id="manageRpcTab">
+                    📋 管理RPC
+                </button>
+                <button class="rpc-tab" onclick="network.switchRpcTab('test')" id="testRpcTab">
+                    🧪 网络测试
+                </button>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">网络名称</label>
-                <input type="text" class="form-input" id="customNetworkName" 
-                       placeholder="将自动识别..." readonly>
+            <!-- 添加RPC标签页 -->
+            <div class="rpc-tab-content" id="addRpcContent">
+                <div class="form-group">
+                    <label class="form-label">RPC URL *</label>
+                    <input type="url" class="form-input" id="customRpcUrl" 
+                           placeholder="https://mainnet.infura.io/v3/YOUR-PROJECT-ID"
+                           oninput="network.onRpcUrlChange()">
+                    <small class="form-hint">输入RPC地址后将自动识别网络类型</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">网络名称</label>
+                    <input type="text" class="form-input" id="customNetworkName" 
+                           placeholder="将自动识别..." readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Chain ID</label>
+                    <input type="number" class="form-input" id="customChainId" 
+                           placeholder="将自动识别..." readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">货币符号</label>
+                    <input type="text" class="form-input" id="customSymbol" 
+                           placeholder="ETH" readonly>
+                </div>
+                
+                <div class="rpc-test-result" id="rpcTestResult"></div>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">Chain ID</label>
-                <input type="number" class="form-input" id="customChainId" 
-                       placeholder="将自动识别..." readonly>
+            <!-- 管理RPC标签页 -->
+            <div class="rpc-tab-content" id="manageRpcContent" style="display: none;">
+                <div class="rpc-list-header">
+                    <h4>自定义RPC列表</h4>
+                    <button class="btn btn-sm btn-secondary" onclick="network.refreshRpcList()">
+                        🔄 刷新
+                    </button>
+                </div>
+                <div class="rpc-list" id="customRpcList">
+                    <div class="empty-rpc-list">
+                        <p>📡 暂无自定义RPC</p>
+                        <p>点击"添加RPC"标签页开始添加</p>
+                    </div>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label class="form-label">货币符号</label>
-                <input type="text" class="form-input" id="customSymbol" 
-                       placeholder="ETH" readonly>
+            <!-- 网络测试标签页 -->
+            <div class="rpc-tab-content" id="testRpcContent" style="display: none;">
+                <div class="network-test-header">
+                    <h4>网络延迟测试</h4>
+                    <button class="btn btn-sm btn-primary" onclick="network.testAllNetworks()">
+                        🧪 测试所有网络
+                    </button>
+                </div>
+                <div class="network-test-results" id="networkTestResults">
+                    <div class="test-placeholder">
+                        <p>🚀 点击"测试所有网络"开始检测</p>
+                        <p style="font-size: 14px; color: #6c757d;">将测试所有预设网络的连接速度和延迟</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="rpc-test-result" id="rpcTestResult"></div>
             
             <div class="modal-buttons">
-                <button class="btn btn-cancel" onclick="network.closeRpcModal()">取消</button>
+                <button class="btn btn-cancel" onclick="network.closeRpcModal()">关闭</button>
                 <button class="btn btn-secondary" onclick="network.testRpc()" id="testRpcBtn">
                     🧪 测试连接
                 </button>
